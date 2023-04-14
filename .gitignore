@@ -1,3 +1,7 @@
-# Binary files
+# binary files
 *.bin
 *.o
+
+# kernel build
+base/boot/kernel
+*.iso

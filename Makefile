@@ -1,16 +1,18 @@
-AS = nasm
+AS = yasm
 QEMU = qemu-system-x86_64
 
-.PHONY: all
-all: clean kernel.bin
+all: clean kernel
 
-kernel.bin: boot/boot.asm
-	$(AS) -f bin -o $@ $^
+kernel: boot/multiboot.asm boot/kernel.asm
+	$(AS) -f elf64 -o boot/multiboot.o boot/multiboot.asm
+	$(AS) -f elf64 -o boot/kernel.o boot/kernel.asm
+	ld -n -T linker.ld -o base/boot/kernel boot/kernel.o boot/multiboot.o
 
-.PHONY: qemu
-qemu:
-	$(QEMU) -drive format=raw,file=kernel.bin
+qemu: kernel
+	grub-mkrescue -d /usr/lib/grub/i386-pc -o owos.iso base/
+	$(QEMU) -drive format=raw,file=owos.iso -m 2G
 
-.PHONY: clean
 clean:
-	rm -f *.o *.bin
+	rm -f **/*.o **/*.bin owos.iso
+
+.PHONY: all clean qemu
